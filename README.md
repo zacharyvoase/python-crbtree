@@ -26,6 +26,10 @@ You can iterate in reverse order by getting a reversed view of the underlying `S
     ('a', 123)
 
 
+[rbtree]: https://en.wikipedia.org/wiki/Red%E2%80%93black_tree
+[cffi]: https://cffi.readthedocs.org/
+
+
 ## Installation
 
     pip install crbtree

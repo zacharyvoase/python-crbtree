@@ -2,7 +2,10 @@ cRBTree
 =======
 
 A ``SortedDict`` and ``SortedSet`` implementation, backed by a
-[red-black tree][rbtree] implementation in C, wrapped with [CFFI][].
+`red-black
+tree <https://en.wikipedia.org/wiki/Red%E2%80%93black_tree>`__
+implementation in C, wrapped with
+`CFFI <https://cffi.readthedocs.org/>`__.
 
 ``SortedDict`` and ``SortedSet`` are collections that always iterate
 through their keys/contents in order. Usage is simple:
