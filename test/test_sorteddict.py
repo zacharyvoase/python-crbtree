@@ -1,8 +1,7 @@
-import gc
-
 from nose.tools import assert_equals
 from nose.tools import assert_not_equals
 from nose.tools import assert_raises
+import six
 
 from crbtree import SortedDict
 
@@ -102,12 +101,6 @@ def test_memory_management():
     assert_not_equals(first_handles, second_handles)
 
 
-def test_destructor():
-    sdict = SortedDict()
-    sdict['a'] = 123
-    sdict.__del__()
-
-
 def test_ordering_maintained():
     sdict = SortedDict()
     for i, char in enumerate('abcdefghijkl'):
@@ -126,13 +119,13 @@ def test_reversed():
 
     assert_equals(len(rsdict), len(sdict))
     assert_equals(list(rsdict), ['c', 'b', 'a'])
-    assert_equals(list(rsdict.iterkeys()), ['c', 'b', 'a'])
-    assert_equals(list(rsdict.itervalues()), [789, 456, 123])
-    assert_equals(list(rsdict.iteritems()), [('c', 789), ('b', 456), ('a', 123)])
+    assert_equals(list(six.iterkeys(rsdict)), ['c', 'b', 'a'])
+    assert_equals(list(six.itervalues(rsdict)), [789, 456, 123])
+    assert_equals(list(six.iteritems(rsdict)), [('c', 789), ('b', 456), ('a', 123)])
 
-    assert_equals(rsdict.keys(), ['c', 'b', 'a'])
-    assert_equals(rsdict.values(), [789, 456, 123])
-    assert_equals(rsdict.items(), [('c', 789), ('b', 456), ('a', 123)])
+    assert_equals(list(rsdict.keys()), ['c', 'b', 'a'])
+    assert_equals(list(rsdict.values()), [789, 456, 123])
+    assert_equals(list(rsdict.items()), [('c', 789), ('b', 456), ('a', 123)])
 
     assert_not_equals(sdict, rsdict)
     assert_not_equals(rsdict, sdict)

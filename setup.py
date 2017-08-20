@@ -25,8 +25,14 @@ setup(
 
     packages=find_packages(exclude=['test']),
 
-    setup_requires=["cffi>=1.4.0"],
-    cffi_modules=["rbtree_build.py:FFI_BUILDER"],
+    setup_requires=[
+        "cffi>=1.4.0",
+        "six>=1.10.0",
+    ],
+    install_requires=[
+        "cffi>=1.4.0",
+        "six>=1.10.0",
+    ],
 
-    install_requires=["cffi>=1.4.0"],
+    cffi_modules=["rbtree_build.py:FFI_BUILDER"],
 )

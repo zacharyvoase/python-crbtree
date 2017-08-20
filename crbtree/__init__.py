@@ -8,9 +8,10 @@ keys in order.
 """
 
 import collections
-import itertools
+import six
 
 from crbtree._rbtree import ffi, lib
+from crbtree import compat
 
 
 __all__ = ['SortedDict', 'SortedSet']
@@ -91,7 +92,7 @@ class SortedDict(collections.MutableMapping):
             raise RuntimeError("Unexpected error removing key {!r}".format(key))
 
     def __iter__(self):
-        for key, value in self.iteritems():
+        for key, value in six.iteritems(self):
             yield key
 
     def __eq__(self, other):
@@ -104,7 +105,17 @@ class SortedDict(collections.MutableMapping):
     def __reversed__(self):
         return ReversedSortedDictView(self)
 
-    def iteritems(self):
+    @compat.return_list_if_py2
+    def keys(self):
+        return iter(self)
+
+    @compat.return_list_if_py2
+    def values(self):
+        for _, value in six.iteritems(self):
+            yield value
+
+    @compat.return_list_if_py2
+    def items(self):
         rb_iter = lib.rb_iter_create()
         try:
             item_p = lib.rb_iter_first(rb_iter, self._rbtree)
@@ -115,24 +126,10 @@ class SortedDict(collections.MutableMapping):
         finally:
             lib.rb_iter_dealloc(rb_iter)
 
-    def reverse_iteritems(self):
-        rb_iter = lib.rb_iter_create()
-        try:
-            item_p = lib.rb_iter_last(rb_iter, self._rbtree)
-            while item_p != ffi.NULL:
-                item = ffi.from_handle(item_p)
-                yield (item.key, item.value)
-                item_p = lib.rb_iter_prev(rb_iter)
-        finally:
-            lib.rb_iter_dealloc(rb_iter)
-
-    def reverse_iterkeys(self):
-        for key, value in self.reverse_iteritems():
-            yield key
-
-    def reverse_itervalues(self):
-        for key, value in self.reverse_iteritems():
-            yield value
+    if six.PY2:
+        iterkeys = keys._iterator
+        itervalues = values._iterator
+        iteritems = items._iterator
 
 
 class ReversedSortedDictView(object):
@@ -151,7 +148,8 @@ class ReversedSortedDictView(object):
         return self.sorted_dict[key]
 
     def __iter__(self):
-        return self.sorted_dict.reverse_iterkeys()
+        for key, _ in six.iteritems(self):
+            yield key
 
     def __eq__(self, other):
         if isinstance(other, ReversedSortedDictView):
@@ -163,23 +161,31 @@ class ReversedSortedDictView(object):
     def __reversed__(self):
         return self.sorted_dict
 
-    def iteritems(self):
-        return self.sorted_dict.reverse_iteritems()
-
-    def iterkeys(self):
+    @compat.return_list_if_py2
+    def keys(self):
         return iter(self)
 
-    def itervalues(self):
-        return self.sorted_dict.reverse_itervalues()
-
-    def items(self):
-        return list(self.iteritems())
-
-    def keys(self):
-        return list(self.iterkeys())
-
+    @compat.return_list_if_py2
     def values(self):
-        return list(self.itervalues())
+        for _, value in six.iteritems(self):
+            yield value
+
+    @compat.return_list_if_py2
+    def items(self):
+        rb_iter = lib.rb_iter_create()
+        try:
+            item_p = lib.rb_iter_last(rb_iter, self.sorted_dict._rbtree)
+            while item_p != ffi.NULL:
+                item = ffi.from_handle(item_p)
+                yield (item.key, item.value)
+                item_p = lib.rb_iter_prev(rb_iter)
+        finally:
+            lib.rb_iter_dealloc(rb_iter)
+
+    if six.PY2:
+        iterkeys = keys._iterator
+        itervalues = values._iterator
+        iteritems = items._iterator
 
 
 class SortedSet(collections.MutableSet):
@@ -197,10 +203,10 @@ class SortedSet(collections.MutableSet):
         return len(self._dict)
 
     def __iter__(self):
-        return self._dict.iterkeys()
+        return six.iterkeys(self._dict)
 
     def __reversed__(self):
-        return self._dict.reverse_iterkeys()
+        return six.iterkeys(reversed(self._dict))
 
     def add(self, value):
         self._dict.setdefault(value, None)
@@ -229,4 +235,4 @@ def sorted_mapping_eq(map1, map2):
     return all(
         k1 == k2 and v1 == v2
         for (k1, v1), (k2, v2)
-        in itertools.izip(map1.iteritems(), map2.iteritems()))
+        in compat.izip(six.iteritems(map1), six.iteritems(map2)))

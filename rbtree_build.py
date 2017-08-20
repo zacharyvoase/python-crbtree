@@ -2,6 +2,7 @@ import os
 import re
 
 from cffi import FFI
+import six
 
 
 SRC_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'rb_tree')
@@ -71,7 +72,7 @@ void           *rb_iter_next            (struct rb_iter *self);
 void           *rb_iter_prev            (struct rb_iter *self);
 '''
 
-for macro_name, macro_value in MACROS.iteritems():
+for macro_name, macro_value in six.iteritems(MACROS):
     HEADER = re.sub(r'\b{}\b'.format(re.escape(macro_name)), re.escape(macro_value), HEADER)
 
 FFI_BUILDER.cdef(HEADER)
